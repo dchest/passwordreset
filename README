@@ -81,9 +81,9 @@ If verification succeeded, allow to change password for the returned login.
 VARIABLES
 
 var (
-    MalformedToken = os.NewError("malformed token")
-    ExpiredToken   = os.NewError("token expired")
-    WrongSignature = os.NewError("wrong token signature")
+    ErrMalformedToken = os.NewError("malformed token")
+    ErrExpiredToken   = os.NewError("token expired")
+    ErrWrongSignature = os.NewError("wrong token signature")
 )
 
 var MinTokenLength = authcookie.MinLength
