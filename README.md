@@ -1,7 +1,7 @@
-PACKAGE
+Package passwordreset
+=====================
 
-package passwordreset
-import "github.com/dchest/passwordreset"
+	import "github.com/dchest/passwordreset"
 
 Package passwordreset implements creation and verification of secure tokens
 useful for implementation of "reset forgotten password" feature in web
@@ -78,15 +78,18 @@ function, and an app-specific secret key:
 If verification succeeded, allow to change password for the returned login.
 
 
-VARIABLES
+Variables
+---------
 
-var (
-    ErrMalformedToken = os.NewError("malformed token")
-    ErrExpiredToken   = os.NewError("token expired")
-    ErrWrongSignature = os.NewError("wrong token signature")
-)
+	var (
+	    ErrMalformedToken = os.NewError("malformed token")
+	    ErrExpiredToken   = os.NewError("token expired")
+	    ErrWrongSignature = os.NewError("wrong token signature")
+	)
 
-var MinTokenLength = authcookie.MinLength
+
+	var MinTokenLength = authcookie.MinLength
+
 MinTokenLength is the minimum allowed length of token string.
 
 It is useful for avoiding DoS attacks with very long tokens: before passing
@@ -94,16 +97,23 @@ a token to VerifyToken function, check that it has length less than [the
 maximum login length allowed in your application] + MinTokenLength.
 
 
-FUNCTIONS
+Functions
+---------
 
-func NewToken(login string, sec int64, pwdval, secret []byte) string
+### func NewToken
+
+	func NewToken(login string, sec int64, pwdval, secret []byte) string
+	
 NewToken returns a new password reset token for the given login, which
 expires after the given seconds since now, signed by the key generated from
 the given password value (which can be any value that will be changed once a
 user resets their password, such as password hash or salt used to generate
 it), and the given secret key.
 
-func VerifyToken(token string, pwdvalFn func(string) ([]byte, os.Error), secret []byte) (login string, err os.Error)
+### func VerifyToken
+
+	func VerifyToken(token string, pwdvalFn func(string) ([]byte, os.Error), secret []byte) (login string, err os.Error)
+	
 VerifyToken verifies the given token with the password value returned by the
 given function and the given secret key, and returns login extracted from
 the valid token. If the token is not valid, the function returns an error.
@@ -112,11 +122,3 @@ Function pwdvalFn must return the current password value for the login it
 receives in arguments, or an error. If it returns an error, VerifyToken
 returns the same error.
 
-
-OTHER PACKAGES
-
-main
-
-SUBDIRECTORIES
-
-	.git
