@@ -3,9 +3,9 @@
 // applications.
 //
 // This package generates and verifies signed one-time tokens that can be
-// embedded in the link sent to users when they initiate password reset. When a
-// user changes their password, or when the expiry time passes, the token
-// becomes invalid.
+// embedded in a link sent to users when they initiate the password reset
+// procedure. When a user changes their password, or when the expiry time
+// passes, the token becomes invalid.
 //
 // Secure token format:
 // 
@@ -37,10 +37,10 @@
 //
 // Create a function that will query your users database and return some
 // password-related value for the given login.  A password-related value means
-// some value that will be changed once a user change their password, for
-// example: a password hash, a random salt used to generated it, or time of
-// password creation.  This value, mixed with app-specific secret key, will be
-// used as a key for password reset token, thus it will be kept secret.
+// some value that will change once a user changes their password, for example:
+// a password hash, a random salt used to generate it, or time of password
+// creation.  This value, mixed with app-specific secret key, will be used as a
+// key for password reset token, thus it will be kept secret.
 // 
 // 	func getPasswordHash(login string) ([]byte, os.Error) {
 // 		// return password hash for the login,
