@@ -7,16 +7,16 @@ import (
 
 var (
 	testLogin      = "test user"
-	testPwdVar     = []byte("test password value")
+	testPwdVal     = []byte("test password value")
 	testSecret     = []byte("secret key")
-	testLoginError = os.NewError("test error")
+	testLoginError = os.NewError("test unknown login error")
 )
 
 func getPwdVal(login string) ([]byte, os.Error) {
 	if login == testLogin {
-		return testPwdVar, nil
+		return testPwdVal, nil
 	}
-	return testPwdVar, testLoginError
+	return testPwdVal, testLoginError
 	//     ^ return it anyway to test that it's not begin used
 }
 
@@ -58,5 +58,12 @@ func TestVerify(t *testing.T) {
 	token = NewToken(testLogin, -1, pwdVal, testSecret)
 	if _, err := VerifyToken(token, getPwdVal, testSecret); err == nil {
 		t.Errorf("verified with wrong password value")
+	}
+	// Test password value error return
+	login := "unknown login"
+	_, errVal := getPwdVal(login)
+	token = NewToken(login, 100, testPwdVal, testSecret)
+	if _, err := VerifyToken(token, getPwdVal, testSecret); err != errVal {
+		t.Errorf("err: expected %q, got %q", errVal, err)
 	}
 }
