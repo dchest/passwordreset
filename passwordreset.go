@@ -94,9 +94,9 @@ import (
 var MinTokenLength = authcookie.MinLength
 
 var (
-	MalformedToken = os.NewError("malformed token")
-	ExpiredToken   = os.NewError("token expired")
-	WrongSignature = os.NewError("wrong token signature")
+	ErrMalformedToken = os.NewError("malformed token")
+	ErrExpiredToken   = os.NewError("token expired")
+	ErrWrongSignature = os.NewError("wrong token signature")
 )
 
 func getUserSecretKey(pwdval, secret []byte) []byte {
@@ -134,7 +134,7 @@ func VerifyToken(token string, pwdvalFn func(string) ([]byte, os.Error), secret 
 	blen := base64.URLEncoding.DecodedLen(len(token))
 	// Avoid allocation if the token is too short
 	if blen <= 4+32 {
-		err = MalformedToken
+		err = ErrMalformedToken
 		return
 	}
 	b := make([]byte, blen)
@@ -145,7 +145,7 @@ func VerifyToken(token string, pwdvalFn func(string) ([]byte, os.Error), secret 
 	// Decoded length may be bifferent from max length, which
 	// we allocated, so check it, and set new length for b
 	if blen <= 4+32 {
-		err = MalformedToken
+		err = ErrMalformedToken
 		return
 	}
 	b = b[:blen]
@@ -153,7 +153,7 @@ func VerifyToken(token string, pwdvalFn func(string) ([]byte, os.Error), secret 
 	data := b[:blen-32]
 	exp := int64(binary.BigEndian.Uint32(data[:4]))
 	if exp < time.Seconds() {
-		err = ExpiredToken
+		err = ErrExpiredToken
 		return
 	}
 	login = string(data[4:])
@@ -166,7 +166,7 @@ func VerifyToken(token string, pwdvalFn func(string) ([]byte, os.Error), secret 
 	sk := getUserSecretKey(pwdval, secret)
 	realSig := getSignature(data, sk)
 	if subtle.ConstantTimeCompare(realSig, sig) != 1 {
-		err = WrongSignature
+		err = ErrWrongSignature
 		return
 	}
 	return
