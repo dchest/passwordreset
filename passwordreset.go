@@ -114,10 +114,10 @@ func getSignature(b []byte, secret []byte) []byte {
 }
 
 // NewToken returns a new password reset token for the given login, which
-// expires after the given seconds since now, signed by the key generated from
-// the given password value (which can be any value that will be changed once a
-// user resets their password, such as password hash or salt used to generate
-// it), and the given secret key.
+// expires after the given time duration since now, signed by the key generated
+// from the given password value (which can be any value that will be changed
+// once a user resets their password, such as password hash or salt used to
+// generate it), and the given secret key.
 func NewToken(login string, dur time.Duration, pwdval, secret []byte) string {
 	sk := getUserSecretKey(pwdval, secret)
 	return authcookie.NewSinceNow(login, dur, sk)

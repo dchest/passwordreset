@@ -45,7 +45,7 @@ a password hash, a random salt used to generate it, or time of password
 creation.  This value, mixed with app-specific secret key, will be used as a
 key for password reset token, thus it will be kept secret.
 
-	func getPasswordHash(login string) ([]byte, os.Error) {
+	func getPasswordHash(login string) ([]byte, error) {
 		// return password hash for the login,
 		// or an error if there's no such user
 	}
@@ -59,7 +59,7 @@ answering a secret question), generate a reset token:
 		return
 	}
 	// Generate reset token that expires in 12 hours
-	token := passwordreset.NewToken(login, 12*60*60, pwdval, secret)
+	token := passwordreset.NewToken(login, 12 * time.Hour, pwdval, secret)
 
 Send a link with this token to the user by email, for example:
 www.example.com/reset?token=Talo3mRjaGVzdITUAGOXYZwCMq7EtHfYH4ILcBgKaoWXDHTJOIlBUfcr
@@ -82,9 +82,9 @@ Variables
 ---------
 
 	var (
-	    ErrMalformedToken = os.NewError("malformed token")
-	    ErrExpiredToken   = os.NewError("token expired")
-	    ErrWrongSignature = os.NewError("wrong token signature")
+	    ErrMalformedToken = errors.New("malformed token")
+	    ErrExpiredToken   = errors.New("token expired")
+	    ErrWrongSignature = errors.New("wrong token signature")
 	)
 
 
@@ -102,17 +102,17 @@ Functions
 
 ### func NewToken
 
-	func NewToken(login string, sec int64, pwdval, secret []byte) string
+	func NewToken(login string, dur time.Duration, pwdval, secret []byte) string
 	
-NewToken returns a new password reset token for the given login, which
-expires after the given seconds since now, signed by the key generated from
-the given password value (which can be any value that will be changed once a
-user resets their password, such as password hash or salt used to generate
-it), and the given secret key.
+NewToken returns a new password reset token for the given login, which expires
+after the given time duration since now, signed by the key generated from the
+given password value (which can be any value that will be changed once a user
+resets their password, such as password hash or salt used to generate it), and
+the given secret key.
 
 ### func VerifyToken
 
-	func VerifyToken(token string, pwdvalFn func(string) ([]byte, os.Error), secret []byte) (login string, err os.Error)
+	func VerifyToken(token string, pwdvalFn func(string) ([]byte, error), secret []byte) (login string, err os.Error)
 	
 VerifyToken verifies the given token with the password value returned by the
 given function and the given secret key, and returns login extracted from
