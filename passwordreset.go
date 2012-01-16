@@ -42,7 +42,7 @@
 // creation.  This value, mixed with app-specific secret key, will be used as a
 // key for password reset token, thus it will be kept secret.
 // 
-// 	func getPasswordHash(login string) ([]byte, os.Error) {
+// 	func getPasswordHash(login string) ([]byte, error) {
 // 		// return password hash for the login,
 //		// or an error if there's no such user
 // 	}
@@ -56,7 +56,7 @@
 //		return
 //	}
 // 	// Generate reset token that expires in 12 hours
-// 	token := passwordreset.NewToken(login, 12*60*60, pwdval, secret)
+// 	token := passwordreset.NewToken(login, 12 * time.Hour, pwdval, secret)
 //
 // Send a link with this token to the user by email, for example:
 // www.example.com/reset?token=Talo3mRjaGVzdITUAGOXYZwCMq7EtHfYH4ILcBgKaoWXDHTJOIlBUfcr
@@ -81,8 +81,8 @@ import (
 	"crypto/subtle"
 	"encoding/base64"
 	"encoding/binary"
+	"errors"
 	"github.com/dchest/authcookie"
-	"os"
 	"time"
 )
 
@@ -94,23 +94,23 @@ import (
 var MinTokenLength = authcookie.MinLength
 
 var (
-	ErrMalformedToken = os.NewError("malformed token")
-	ErrExpiredToken   = os.NewError("token expired")
-	ErrWrongSignature = os.NewError("wrong token signature")
+	ErrMalformedToken = errors.New("malformed token")
+	ErrExpiredToken   = errors.New("token expired")
+	ErrWrongSignature = errors.New("wrong token signature")
 )
 
 func getUserSecretKey(pwdval, secret []byte) []byte {
 	m := hmac.NewSHA256(secret)
 	m.Write(pwdval)
-	return m.Sum()
+	return m.Sum(nil)
 }
 
 func getSignature(b []byte, secret []byte) []byte {
 	keym := hmac.NewSHA256(secret)
 	keym.Write(b)
-	m := hmac.NewSHA256(keym.Sum())
+	m := hmac.NewSHA256(keym.Sum(nil))
 	m.Write(b)
-	return m.Sum()
+	return m.Sum(nil)
 }
 
 // NewToken returns a new password reset token for the given login, which
@@ -118,9 +118,9 @@ func getSignature(b []byte, secret []byte) []byte {
 // the given password value (which can be any value that will be changed once a
 // user resets their password, such as password hash or salt used to generate
 // it), and the given secret key.
-func NewToken(login string, sec int64, pwdval, secret []byte) string {
+func NewToken(login string, dur time.Duration, pwdval, secret []byte) string {
 	sk := getUserSecretKey(pwdval, secret)
-	return authcookie.NewSinceNow(login, sec, sk)
+	return authcookie.NewSinceNow(login, dur, sk)
 }
 
 // VerifyToken verifies the given token with the password value returned by the
@@ -130,7 +130,7 @@ func NewToken(login string, sec int64, pwdval, secret []byte) string {
 // Function pwdvalFn must return the current password value for the login it
 // receives in arguments, or an error. If it returns an error, VerifyToken
 // returns the same error.
-func VerifyToken(token string, pwdvalFn func(string) ([]byte, os.Error), secret []byte) (login string, err os.Error) {
+func VerifyToken(token string, pwdvalFn func(string) ([]byte, error), secret []byte) (login string, err error) {
 	blen := base64.URLEncoding.DecodedLen(len(token))
 	// Avoid allocation if the token is too short
 	if blen <= 4+32 {
@@ -151,8 +151,8 @@ func VerifyToken(token string, pwdvalFn func(string) ([]byte, os.Error), secret 
 	b = b[:blen]
 
 	data := b[:blen-32]
-	exp := int64(binary.BigEndian.Uint32(data[:4]))
-	if exp < time.Seconds() {
+	exp := time.Unix(int64(binary.BigEndian.Uint32(data[:4])), 0)
+	if exp.Before(time.Now()) {
 		err = ErrExpiredToken
 		return
 	}

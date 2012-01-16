@@ -1,18 +1,19 @@
 package passwordreset
 
 import (
+	"errors"
 	"testing"
-	"os"
+	"time"
 )
 
 var (
 	testLogin      = "test user"
 	testPwdVal     = []byte("test password value")
 	testSecret     = []byte("secret key")
-	testLoginError = os.NewError("test unknown login error")
+	testLoginError = errors.New("test unknown login error")
 )
 
-func getPwdVal(login string) ([]byte, os.Error) {
+func getPwdVal(login string) ([]byte, error) {
 	if login == testLogin {
 		return testPwdVal, nil
 	}
@@ -22,7 +23,7 @@ func getPwdVal(login string) ([]byte, os.Error) {
 
 func TestNew(t *testing.T) {
 	pwdVal, _ := getPwdVal(testLogin)
-	token := NewToken(testLogin, 100, pwdVal, testSecret)
+	token := NewToken(testLogin, 100 * time.Second, pwdVal, testSecret)
 	login, err := VerifyToken(token, getPwdVal, testSecret)
 	if err != nil {
 		t.Errorf("unexpected error %q", err)
@@ -62,7 +63,7 @@ func TestVerify(t *testing.T) {
 	// Test password value error return
 	login := "unknown login"
 	_, errVal := getPwdVal(login)
-	token = NewToken(login, 100, testPwdVal, testSecret)
+	token = NewToken(login, 100 * time.Second, testPwdVal, testSecret)
 	if _, err := VerifyToken(token, getPwdVal, testSecret); err != errVal {
 		t.Errorf("err: expected %q, got %q", errVal, err)
 	}
