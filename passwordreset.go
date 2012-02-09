@@ -78,6 +78,7 @@ package passwordreset
 
 import (
 	"crypto/hmac"
+	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/base64"
 	"encoding/binary"
@@ -100,15 +101,15 @@ var (
 )
 
 func getUserSecretKey(pwdval, secret []byte) []byte {
-	m := hmac.NewSHA256(secret)
+	m := hmac.New(sha256.New, secret)
 	m.Write(pwdval)
 	return m.Sum(nil)
 }
 
 func getSignature(b []byte, secret []byte) []byte {
-	keym := hmac.NewSHA256(secret)
+	keym := hmac.New(sha256.New, secret)
 	keym.Write(b)
-	m := hmac.NewSHA256(keym.Sum(nil))
+	m := hmac.New(sha256.New, keym.Sum(nil))
 	m.Write(b)
 	return m.Sum(nil)
 }
