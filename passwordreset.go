@@ -59,7 +59,7 @@
 // 	token := passwordreset.NewToken(login, 12 * time.Hour, pwdval, secret)
 //
 // Send a link with this token to the user by email, for example:
-// www.example.com/reset?token=Talo3mRjaGVzdITUAGOXYZwCMq7EtHfYH4ILcBgKaoWXDHTJOIlBUfcr
+// https://www.example.com/reset?token=Talo3mRjaGVzdITUAGOXYZwCMq7EtHfYH4ILcBgKaoWXDHTJOIlBUfcr
 // 
 // Once a user clicks this link, read a token from it, then verify this token
 // by passing it to VerifyToken function along with the getPasswordHash
