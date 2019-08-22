@@ -8,7 +8,7 @@
 // passes, the token becomes invalid.
 //
 // Secure token format:
-// 
+//
 // 	expiration time || login || signature
 //
 // where expiration time is the number of seconds since Unix epoch UTC
@@ -41,7 +41,7 @@
 // a password hash, a random salt used to generate it, or time of password
 // creation.  This value, mixed with app-specific secret key, will be used as a
 // key for password reset token, thus it will be kept secret.
-// 
+//
 // 	func getPasswordHash(login string) ([]byte, error) {
 // 		// return password hash for the login,
 //		// or an error if there's no such user
@@ -60,7 +60,7 @@
 //
 // Send a link with this token to the user by email, for example:
 // https://www.example.com/reset?token=Talo3mRjaGVzdITUAGOXYZwCMq7EtHfYH4ILcBgKaoWXDHTJOIlBUfcr
-// 
+//
 // Once a user clicks this link, read a token from it, then verify this token
 // by passing it to VerifyToken function along with the getPasswordHash
 // function, and an app-specific secret key:
@@ -71,8 +71,8 @@
 //		return
 //	}
 //	// OK, reset password for login (e.g. allow to change it)
-// 
-// If verification succeeded, allow to change password for the returned login. 
+//
+// If verification succeeded, allow to change password for the returned login.
 //
 package passwordreset
 
@@ -122,6 +122,11 @@ func getSignature(b []byte, secret []byte) []byte {
 func NewToken(login string, dur time.Duration, pwdval, secret []byte) string {
 	sk := getUserSecretKey(pwdval, secret)
 	return authcookie.NewSinceNow(login, dur, sk)
+}
+
+func NewTokenNoPadding(login string, dur time.Duration, pwdval, secret []byte) string {
+	sk := getUserSecretKey(pwdval, secret)
+	return authcookie.NewSinceNowNoPadding(login, dur, sk)
 }
 
 // VerifyToken verifies the given token with the password value returned by the
