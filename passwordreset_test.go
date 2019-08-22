@@ -50,6 +50,7 @@ func TestVerify(t *testing.T) {
 		"",
 		"bad token",
 		"Talo3mRjaGVzdITUAGOXYZwCMq7EtHfYH4ILcBgKaoWXDHTJOIlBUfcr",
+		"Talo3mRjaGVzdITUAGOXYZwCMq7EtHfYH4ILcBgKaoWXDHTJOIlBUfcr=",
 	}
 	for i, token := range bad {
 		login, err := VerifyToken(token, getPwdVal, testSecret)
