@@ -23,7 +23,19 @@ func getPwdVal(login string) ([]byte, error) {
 
 func TestNew(t *testing.T) {
 	pwdVal, _ := getPwdVal(testLogin)
-	token := NewToken(testLogin, 100 * time.Second, pwdVal, testSecret)
+	token := NewToken(testLogin, 100*time.Second, pwdVal, testSecret)
+	login, err := VerifyToken(token, getPwdVal, testSecret)
+	if err != nil {
+		t.Errorf("unexpected error %q", err)
+	}
+	if login != testLogin {
+		t.Errorf("login: expected %q, got %q", testLogin, login)
+	}
+}
+
+func TestNewNoPadding(t *testing.T) {
+	pwdVal, _ := getPwdVal(testLogin)
+	token := NewTokenNoPadding(testLogin, 100*time.Second, pwdVal, testSecret)
 	login, err := VerifyToken(token, getPwdVal, testSecret)
 	if err != nil {
 		t.Errorf("unexpected error %q", err)
@@ -38,6 +50,7 @@ func TestVerify(t *testing.T) {
 		"",
 		"bad token",
 		"Talo3mRjaGVzdITUAGOXYZwCMq7EtHfYH4ILcBgKaoWXDHTJOIlBUfcr",
+		"Talo3mRjaGVzdITUAGOXYZwCMq7EtHfYH4ILcBgKaoWXDHTJOIlBUfcr=",
 	}
 	for i, token := range bad {
 		login, err := VerifyToken(token, getPwdVal, testSecret)
@@ -45,7 +58,7 @@ func TestVerify(t *testing.T) {
 			t.Errorf(`%d: login for bad token: expected "", got %q`, i, login)
 		}
 		if err == nil {
-			t.Errorf("%d: expected error")
+			t.Errorf("%d: expected error", i)
 		}
 	}
 	// Test expiration
@@ -63,7 +76,7 @@ func TestVerify(t *testing.T) {
 	// Test password value error return
 	login := "unknown login"
 	_, errVal := getPwdVal(login)
-	token = NewToken(login, 100 * time.Second, testPwdVal, testSecret)
+	token = NewToken(login, 100*time.Second, testPwdVal, testSecret)
 	if _, err := VerifyToken(token, getPwdVal, testSecret); err != errVal {
 		t.Errorf("err: expected %q, got %q", errVal, err)
 	}
