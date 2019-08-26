@@ -84,6 +84,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"github.com/dchest/authcookie"
+	"strings"
 	"time"
 )
 
@@ -137,14 +138,19 @@ func NewTokenNoPadding(login string, dur time.Duration, pwdval, secret []byte) s
 // receives in arguments, or an error. If it returns an error, VerifyToken
 // returns the same error.
 func VerifyToken(token string, pwdvalFn func(string) ([]byte, error), secret []byte) (login string, err error) {
-	blen := base64.URLEncoding.DecodedLen(len(token))
+	encoding := base64.RawURLEncoding
+	// If we have padding, use URLEncoding instead of RawURLEncoding.
+	if strings.LastIndexByte(token, '=') != -1 {
+		encoding = base64.URLEncoding
+	}
+	blen := encoding.DecodedLen(len(token))
 	// Avoid allocation if the token is too short
 	if blen <= 4+32 {
 		err = ErrMalformedToken
 		return
 	}
 	b := make([]byte, blen)
-	blen, err = base64.URLEncoding.Decode(b, []byte(token))
+	blen, err = encoding.Decode(b, []byte(token))
 	if err != nil {
 		return
 	}
